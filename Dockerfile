@@ -1,6 +1,6 @@
 FROM golang:1.14-alpine AS builder
 
-RUN apk add --no-cache curl make
+RUN apk add --no-cache curl
 
 WORKDIR /build
 
@@ -17,6 +17,6 @@ FROM alpine:3.12
 
 WORKDIR app
 
-COPY --from=builder /build/bin/binance_linux_amd64 /usr/local/bin/binance
+COPY --from=builder /build/bin/binance_cli_linux_amd64 /usr/local/bin/binance-cli
 
 CMD ["binance"]

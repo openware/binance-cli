@@ -1,0 +1,69 @@
+---
+kind: pipeline
+type: docker
+name: default
+
+steps:
+  - name: Bump and tag
+    image: golang:1.14
+    environment:
+      GITHUB_API_KEY:
+        from_secret: github_api_key
+      GITHUB_API_USER:
+        from_secret: github_api_user
+    commands:
+      - git config --global user.name "Kite Bot"
+      - git config --global user.email "kite-bot@heliostech.fr"
+      - go get github.com/guilhem/bump
+      - git remote add authenticated-origin https://$GITHUB_API_USER:$GITHUB_API_KEY@github.com/$DRONE_REPO
+      - git fetch --tags authenticated-origin
+      - bump patch --allow-dirty > .tags
+      - git push authenticated-origin --tags
+    when:
+      event:
+        - push
+
+  - name: test-build
+    image: golang:1.14-stretch
+    environment:
+      GO111MODULE: "on"
+    commands:
+    # - apt-get update
+    # - apt-get install -y build-essential
+      - go mod download
+      - go test ./... -race --cover --count=10 --timeout 2m
+      - echo $DRONE_TAG > .tags
+    # - ./build.sh
+    when:
+      event:
+        - tag
+
+# - name: publish
+#   image: plugins/github-release
+#   settings:
+#     api_key:
+#       from_secret: github_api_key
+#     files: bin/*
+#   when:
+#     event:
+#       - tag
+
+  - name: docker-build
+    image: plugins/docker
+    settings:
+      username:
+        from_secret: quay_username
+      password:
+        from_secret: quay_password
+      repo: quay.io/openware/binance-cli
+      registry: quay.io
+    when:
+      event:
+        - tag
+
+trigger:
+  event:
+    - push
+    - tag
+  branch:
+    - master

@@ -14,7 +14,7 @@ do
         output_os+='.exe'
     fi
 
-	env GOOS=$GOOS GOARCH=$GOARCH CGO_ENABLED=0 go build -a -ldflags '-w' -o bin/binance_$output_os .
+	env GOOS=$GOOS GOARCH=$GOARCH CGO_ENABLED=0 go build -a -ldflags '-w' -o bin/binance_cli_$output_os .
     if [ $? -ne 0 ]; then
         echo 'An error has occurred! Aborting the script execution...'
         exit 1
