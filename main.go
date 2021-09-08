@@ -6,6 +6,7 @@ import (
 
 	"github.com/fatih/color"
 	"github.com/openware/binance-cli/pkg/binance"
+	"github.com/openware/binance-cli/pkg/helpers"
 	"github.com/openware/binance-cli/pkg/opendax"
 
 	"github.com/openware/pkg/kli"
@@ -13,6 +14,9 @@ import (
 
 // version of the command line
 var version = "SNAPSHOT"
+
+// AutoEnabled defines whether auto mode should be used for the markets cmd
+var AutoEnabled = false
 
 func main() {
 	cli := kli.NewCli("binance-cli", "Binance cli", version)
@@ -23,6 +27,8 @@ func main() {
 
 	marketsCommand := kli.NewCommand("markets", "Compare markets").Action(compareMarkets)
 	cli.AddCommand(marketsCommand)
+
+	marketsCommand.BoolFlag("auto", "Automatically update every market and save the output", &AutoEnabled)
 
 	if err := cli.Run(); err != nil {
 		fmt.Printf("Error encountered: %v\n", err)
@@ -45,6 +51,8 @@ func compareMarkets() error {
 		return err
 	}
 
+	var updatedMarkets []string
+
 	for _, opendaxMarket := range opendaxMarkets {
 		binanceMarket, ok := binanceInfo.MarketRegistry[opendaxMarket.ToBinanceMarketName()]
 		if ok {
@@ -61,11 +69,16 @@ func compareMarkets() error {
 				fmt.Println("Skipping")
 				continue
 			}
-			fmt.Print("Update market:")
-			var input string
-			fmt.Scanln(&input)
 
-			if input == "y" {
+			var input string
+			if AutoEnabled {
+				fmt.Println("Skipping market update prompt due to auto mode")
+			} else {
+				fmt.Print("Update this market?")
+				fmt.Scanln(&input)
+			}
+
+			if AutoEnabled || input == "y" {
 				updatedMarket, err := opendaxClient.UpdateOpendaxMarket(opendax.UpdateMarketRequest{
 					Symbol:          opendaxMarket.Symbol,
 					MinPrice:        convertedBinanceMarket.MinPrice,
@@ -81,6 +94,8 @@ func compareMarkets() error {
 
 				fmt.Println("New market:")
 				updatedMarket.Print()
+
+				updatedMarkets = append(updatedMarkets, updatedMarket.Name)
 			} else if input == "n" {
 				continue
 			} else {
@@ -91,7 +106,14 @@ func compareMarkets() error {
 		}
 	}
 
-	fmt.Println("Total:", len(opendaxMarkets))
+	if AutoEnabled {
+		err = helpers.WriteToFile("updated-markets.txt", fmt.Sprintf("%v", updatedMarkets))
+		if err != nil {
+			fmt.Printf("Error saving updated markets: %s\nUpdated markets: %v", err, updatedMarkets)
+		}
+	}
+
+	fmt.Println("Total OpenDAX markets:", len(opendaxMarkets))
 
 	return nil
 }

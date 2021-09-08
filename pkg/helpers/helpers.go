@@ -1,6 +1,9 @@
 package helpers
 
-import "encoding/json"
+import (
+	"encoding/json"
+	"os"
+)
 
 func ValuePrecision(number json.Number) int {
 	n := 0
@@ -8,8 +11,8 @@ func ValuePrecision(number json.Number) int {
 		return 0
 	} else if v < 1 {
 		n = 1
-		for v * 10 < 1 {
-			n +=1
+		for v*10 < 1 {
+			n += 1
 			v *= 10
 		}
 
@@ -17,9 +20,18 @@ func ValuePrecision(number json.Number) int {
 		n = 0
 	} else {
 		n = -1
-		for v / 10 > 1 {
-			n-=1
+		for v/10 > 1 {
+			n -= 1
 		}
 	}
 	return n
+}
+
+func WriteToFile(filename, str string) error {
+	err := os.WriteFile(filename, []byte(str), 0644)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
