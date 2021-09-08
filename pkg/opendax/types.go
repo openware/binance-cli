@@ -8,8 +8,8 @@ import (
 
 type OpendaxClient struct {
 	platrofmUrl string
-	apiKey string
-	secretKey string
+	apiKey      string
+	secretKey   string
 }
 
 type OpendaxCurrencies []*OpendaxCurrency
@@ -73,7 +73,7 @@ func (r *UpdateMarketRequest) Encode() ([]byte, error) {
 }
 
 func CompareOpendaxMarkets(firstMarket, secondMarket OpendaxMarket) bool {
-	if (firstMarket.AmountPrecision != secondMarket.AmountPrecision || firstMarket.PricePrecision != secondMarket.PricePrecision) {
+	if firstMarket.AmountPrecision != secondMarket.AmountPrecision || firstMarket.PricePrecision != secondMarket.PricePrecision || firstMarket.MinAmount != secondMarket.MinAmount {
 		return false
 	}
 	return true

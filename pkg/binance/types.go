@@ -37,10 +37,11 @@ type BinanceMarket struct {
 
 type Filter struct {
 	Type        string      `json:"filterType"`
-	MinPrice    json.Number `json:"minPrice"`
-	MaxPrice    json.Number `json:"maxPrice"`
-	TickSize    json.Number `json:"tickSize"`
-	MinQuantity json.Number `json:"minQty"`
+	MinPrice    json.Number `json:"minPrice,omitempty"`
+	MaxPrice    json.Number `json:"maxPrice,omitempty"`
+	TickSize    json.Number `json:"tickSize,omitempty"`
+	MinQuantity json.Number `json:"minQty,omitempty"`
+	MinNotional json.Number `json:"minNotional,omitempty"`
 }
 
 func (m BinanceMarket) GetFilter(filter string) Filter {
@@ -66,7 +67,12 @@ type Network struct {
 	WithdrawMin json.Number `json:"withdrawMin"`
 }
 
-func (m BinanceMarket) ToOpendaxMarket() opendax.OpendaxMarket {
+type BinanceTickerPrice struct {
+	Symbol string      `json:"symbol"`
+	Price  json.Number `json:"price"`
+}
+
+func (m BinanceMarket) ToOpendaxMarket(minAmountFloat float64) opendax.OpendaxMarket {
 	priceFilter := m.GetFilter("PRICE_FILTER")
 	quantityFilter := m.GetFilter("LOT_SIZE")
 
@@ -74,6 +80,9 @@ func (m BinanceMarket) ToOpendaxMarket() opendax.OpendaxMarket {
 	quotePrecision, _ := m.QuotePrecision.Float64()
 
 	pricePresion := math.Min(float64(tickPrecision), quotePrecision)
+	amountPrecision := helpers.ValuePrecision(quantityFilter.MinQuantity)
+
+	minAmount := json.Number(fmt.Sprintf("%0."+fmt.Sprint(amountPrecision)+"f", minAmountFloat))
 
 	return opendax.OpendaxMarket{
 		Symbol:    strings.ToLower(strings.Join([]string{m.BaseUnit, m.QuoteUnit}, "")),
@@ -84,12 +93,34 @@ func (m BinanceMarket) ToOpendaxMarket() opendax.OpendaxMarket {
 		// Commented to not limit MaxPrice
 		//MaxPrice:        priceFilter.MaxPrice,
 		MaxPrice:        json.Number(fmt.Sprintf(`%.2f`, 0.0)),
-		MinAmount:       quantityFilter.MinQuantity,
-		AmountPrecision: helpers.ValuePrecision(quantityFilter.MinQuantity),
+		MinAmount:       minAmount,
+		AmountPrecision: amountPrecision,
 		PricePrecision:  int(pricePresion),
 	}
 }
 
 func (m BinanceMarket) OpendaxMarketName() string {
 	return strings.ToUpper(strings.Join([]string{m.BaseUnit, m.QuoteUnit}, "/"))
+}
+
+func (m BinanceMarket) CalculateMinAmount(price json.Number) (float64, error) {
+	notionalFilter := m.GetFilter("MIN_NOTIONAL")
+
+	minNotionalFloat, err := notionalFilter.MinNotional.Float64()
+	if err != nil {
+		return 0, err
+	}
+	fmt.Printf("Min notional float for %s: %v\n", m.Symbol, minNotionalFloat)
+
+	fmt.Printf("Raw price for %s: %v\n", m.Symbol, price)
+	priceFloat, err := price.Float64()
+	if err != nil {
+		return 0, err
+	}
+
+	// Return 105% of min amount to be sure it covers the min notional
+	minAmount := 1.05 * minNotionalFloat / priceFloat
+	fmt.Printf("Min amount for %s: %v\n", m.Symbol, minAmount)
+
+	return minAmount, nil
 }

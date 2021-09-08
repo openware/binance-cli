@@ -56,7 +56,19 @@ func compareMarkets() error {
 	for _, opendaxMarket := range opendaxMarkets {
 		binanceMarket, ok := binanceInfo.MarketRegistry[opendaxMarket.ToBinanceMarketName()]
 		if ok {
-			convertedBinanceMarket := binanceMarket.ToOpendaxMarket()
+			tickerPrice, err := binanceClient.TickerPriceInfo(binanceMarket.Symbol)
+			if err != nil {
+				fmt.Printf("ERR: compareMarkets: ticker price fetch for %s failed: %s\n", binanceMarket.Symbol, err)
+				continue
+			}
+
+			minAmount, err := binanceMarket.CalculateMinAmount(tickerPrice.Price)
+			if err != nil {
+				fmt.Printf("ERR: compareMarkets: min amount calculation for %s failed: %s\n", binanceMarket.Symbol, err)
+				continue
+			}
+
+			convertedBinanceMarket := binanceMarket.ToOpendaxMarket(minAmount)
 			fmt.Println("Comparing", opendaxMarket.Symbol)
 			fmt.Println("Equal:", opendax.CompareOpendaxMarkets(opendaxMarket, convertedBinanceMarket))
 			fmt.Println("Binance:")

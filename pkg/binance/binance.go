@@ -1,5 +1,7 @@
 package binance
 
+import "fmt"
+
 func NewBinanceClient(apiKey, secret string) *BinanceClient {
 	return &BinanceClient{
 		apiKey: apiKey,
@@ -13,9 +15,15 @@ func (bc *BinanceClient) CoinsInfo() (BinanceCurrencies, error) {
 	return currencies, err
 }
 
-func (bc *BinanceClient) ExchangeInfo() (BinanceExchangeInfo, error) {
-	exchangeInfo := BinanceExchangeInfo{}
+func (bc *BinanceClient) ExchangeInfo() (*BinanceExchangeInfo, error) {
+	exchangeInfo := &BinanceExchangeInfo{}
 	_, err := bc.apiCall(exchangeInfoEndpoint, &exchangeInfo)
 	exchangeInfo.FillRegistry()
 	return exchangeInfo, err
+}
+
+func (bc *BinanceClient) TickerPriceInfo(symbol string) (*BinanceTickerPrice, error) {
+	tickerPrice := &BinanceTickerPrice{}
+	_, err := bc.apiCall(fmt.Sprintf("%s?symbol=%s", tickerPriceInfoEndpoint, symbol), &tickerPrice)
+	return tickerPrice, err
 }
