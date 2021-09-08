@@ -7,7 +7,7 @@ import (
 )
 
 type OpendaxClient struct {
-	platrofmUrl string
+	platformUrl string
 	apiKey      string
 	secretKey   string
 }
@@ -77,4 +77,15 @@ func CompareOpendaxMarkets(firstMarket, secondMarket OpendaxMarket) bool {
 		return false
 	}
 	return true
+}
+
+// UpdateSecretRequest represents params for a Sonic secret update request
+type UpdateSecretRequest struct {
+	Key   string `json:"key"`
+	Scope string `json:"scope"`
+	Value string `json:"value"`
+}
+
+func (r *UpdateSecretRequest) Encode() ([]byte, error) {
+	return json.Marshal(r)
 }

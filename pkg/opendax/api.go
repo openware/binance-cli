@@ -8,17 +8,18 @@ import (
 )
 
 const (
-	adminMarketsUpdateEndpoint = "/api/v2/peatio/admin/markets/update"
-	marketsEndpoint            = "/api/v2/peatio/public/markets"
-	currenciesEndpoint         = "/api/v2/peatio/public/currencies"
-	NotFoundError              = "404 Record Not Found"
-	NotAuthorizedError         = "401 Not Authorized"
-	ServiceUnavailableError    = "503 Service Unavailable"
-	HttpTransportError         = "HTTP Transport Error"
+	adminMarketsUpdateEndpoint     = "/api/v2/peatio/admin/markets/update"
+	adminFinexSecretUpdateEndpoint = "/api/v2/sonic/admin/finex/secret"
+	marketsEndpoint                = "/api/v2/peatio/public/markets"
+	currenciesEndpoint             = "/api/v2/peatio/public/currencies"
+	NotFoundError                  = "404 Record Not Found"
+	NotAuthorizedError             = "401 Not Authorized"
+	ServiceUnavailableError        = "503 Service Unavailable"
+	HttpTransportError             = "HTTP Transport Error"
 )
 
 func (oc *OpendaxClient) opendaxApiCall(endpoint string, receiver interface{}) (interface{}, http.Header, int, error) {
-	uri := oc.platrofmUrl + endpoint
+	uri := oc.platformUrl + endpoint
 	resp, err := http.Get(uri)
 	if err != nil {
 		fmt.Printf("The HTTP request failed with error %s\n", err)
@@ -39,8 +40,15 @@ func (oc *OpendaxClient) opendaxApiCall(endpoint string, receiver interface{}) (
 }
 
 func (oc *OpendaxClient) opendaxPostApiCall(endpoint string, body []byte, receiver interface{}) (interface{}, http.Header, int, error) {
-	uri := oc.platrofmUrl + endpoint
-	req, err := http.NewRequest("POST", uri, bytes.NewReader(body))
+	uri := oc.platformUrl + endpoint
+
+	// TODO: Refactor to pass method into opendaxPostApiCall
+	method := "POST"
+	if endpoint == adminFinexSecretUpdateEndpoint {
+		method = "PUT"
+	}
+
+	req, err := http.NewRequest(method, uri, bytes.NewReader(body))
 	if err != nil {
 		panic(err)
 	}

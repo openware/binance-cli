@@ -110,9 +110,7 @@ func (m BinanceMarket) CalculateMinAmount(price json.Number) (float64, error) {
 	if err != nil {
 		return 0, err
 	}
-	fmt.Printf("Min notional float for %s: %v\n", m.Symbol, minNotionalFloat)
 
-	fmt.Printf("Raw price for %s: %v\n", m.Symbol, price)
 	priceFloat, err := price.Float64()
 	if err != nil {
 		return 0, err
@@ -120,7 +118,6 @@ func (m BinanceMarket) CalculateMinAmount(price json.Number) (float64, error) {
 
 	// Return 105% of min amount to be sure it covers the min notional
 	minAmount := 1.05 * minNotionalFloat / priceFloat
-	fmt.Printf("Min amount for %s: %v\n", m.Symbol, minAmount)
 
 	return minAmount, nil
 }

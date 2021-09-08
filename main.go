@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"time"
 
 	"github.com/fatih/color"
 	"github.com/openware/binance-cli/pkg/binance"
@@ -118,10 +119,22 @@ func compareMarkets() error {
 		}
 	}
 
-	if AutoEnabled {
+	if AutoEnabled && len(updatedMarkets) > 0 {
 		err = helpers.WriteToFile("updated-markets.txt", fmt.Sprintf("%v", updatedMarkets))
 		if err != nil {
 			fmt.Printf("Error saving updated markets: %s\nUpdated markets: %v", err, updatedMarkets)
+		}
+
+		secretUpdateParams := opendax.UpdateSecretRequest{
+			Scope: "private",
+			Key:   "restart",
+			Value: fmt.Sprint(time.Now()),
+		}
+
+		err := opendaxClient.UpdateOpendaxSecret(secretUpdateParams)
+
+		if err != nil {
+			fmt.Printf("Error updating Finex restart secret: %s", err)
 		}
 	}
 

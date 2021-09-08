@@ -12,7 +12,7 @@ import (
 
 func NewOpendaxClient(platformUrl string) *OpendaxClient {
 	return &OpendaxClient{
-		platrofmUrl: platformUrl,
+		platformUrl: platformUrl,
 	}
 }
 
@@ -36,15 +36,25 @@ func (oc *OpendaxClient) FetchOpendaxMarkets() (OpendaxMarkets, error) {
 func (oc *OpendaxClient) UpdateOpendaxMarket(request UpdateMarketRequest) (OpendaxMarket, error) {
 	body, err := request.Encode()
 	if err != nil {
-		panic (err)
+		panic(err)
 	}
 
 	market := OpendaxMarket{}
-	_, _, _, err  = oc.opendaxPostApiCall(adminMarketsUpdateEndpoint, body, &market)
-	return  market, err
+	_, _, _, err = oc.opendaxPostApiCall(adminMarketsUpdateEndpoint, body, &market)
+	return market, err
 }
 
-func (oc *OpendaxClient) SignRequest( request *http.Request) {
+func (oc *OpendaxClient) UpdateOpendaxSecret(request UpdateSecretRequest) error {
+	body, err := request.Encode()
+	if err != nil {
+		panic(err)
+	}
+
+	_, _, _, err = oc.opendaxPostApiCall(adminFinexSecretUpdateEndpoint, body, nil)
+	return err
+}
+
+func (oc *OpendaxClient) SignRequest(request *http.Request) {
 	nonce := fmt.Sprintf("%d", time.Now().Unix()*1000)
 
 	data := strings.Join([]string{nonce, oc.apiKey}, "")
