@@ -39,7 +39,7 @@ func main() {
 
 func compareMarkets() error {
 	config := readConfig()
-	binanceClient := binance.NewBinanceClient("", "")
+	binanceClient := binance.NewBinanceClient("", "", binance.BinanceBaseUrl)
 	binanceInfo, err := binanceClient.ExchangeInfo()
 	if err != nil {
 		return err
@@ -152,7 +152,7 @@ func compareFees() error {
 		return err
 	}
 
-	binanceClient := binance.NewBinanceClient(config.BinanceApiKey, config.BinanceSecret)
+	binanceClient := binance.NewBinanceClient(config.BinanceApiKey, config.BinanceSecret, binance.BinanceBaseUrl)
 	binanceCurrencies, err := binanceClient.CoinsInfo()
 	if err != nil {
 		return err

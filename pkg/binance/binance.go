@@ -2,10 +2,11 @@ package binance
 
 import "fmt"
 
-func NewBinanceClient(apiKey, secret string) *BinanceClient {
+func NewBinanceClient(apiKey, secret, url string) *BinanceClient {
 	return &BinanceClient{
 		apiKey: apiKey,
 		secret: secret,
+		url:    url,
 	}
 }
 

@@ -13,6 +13,7 @@ import (
 type BinanceClient struct {
 	apiKey string
 	secret string
+	url    string
 }
 
 type BinanceExchangeInfo struct {
