@@ -1,12 +1,13 @@
 package helpers
 
 import (
-	"encoding/json"
 	"os"
+
+	"github.com/shopspring/decimal"
 )
 
-func ValuePrecision(number json.Number) int {
-	n := 0
+func ValuePrecision(number decimal.Decimal) int64 {
+	var n int64
 	if v, _ := number.Float64(); v == 0 {
 		return 0
 	} else if v < 1 {

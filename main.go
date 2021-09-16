@@ -9,6 +9,7 @@ import (
 	"github.com/openware/binance-cli/pkg/binance"
 	"github.com/openware/binance-cli/pkg/helpers"
 	"github.com/openware/binance-cli/pkg/opendax"
+	"github.com/shopspring/decimal"
 
 	"github.com/openware/pkg/kli"
 )
@@ -63,9 +64,9 @@ func compareMarkets() error {
 				continue
 			}
 
-			minAmount, err := binanceMarket.CalculateMinAmount(tickerPrice.Price)
-			if err != nil {
-				fmt.Printf("ERR: compareMarkets: min amount calculation for %s failed: %s\n", binanceMarket.Symbol, err)
+			minAmount := binanceMarket.CalculateMinAmount(tickerPrice.Price)
+			if minAmount.Equal(decimal.Zero) {
+				fmt.Printf("ERR: compareMarkets: min amount is zero for %s!\n", binanceMarket.Symbol)
 				continue
 			}
 
@@ -178,15 +179,9 @@ func compareFees() error {
 		for _, network := range binanceCurrency.Networks {
 			fmt.Printf("\n%s coin on %s network:\n", opendaxCurrency.ToBinanceCoinName(), network.Name)
 
-			opendaxMinWithdraw, err := opendaxCurrency.MinWithdrawAmount.Float64()
-			if err != nil {
-				color.Magenta(fmt.Sprintf("\nERROR: %s\n%s cannot convert Opendax Min Withdraw to Float64, skipping ...\n", err, opendaxCurrency.ToBinanceCoinName()))
-			}
+			opendaxMinWithdraw, _ := opendaxCurrency.MinWithdrawAmount.Float64()
 
-			binanceMinWithdraw, err := network.WithdrawMin.Float64()
-			if err != nil {
-				color.Magenta(fmt.Sprintf("\nERROR: %s\n%s cannot convert Binance Min Withdraw to Float64, skipping ...\n", err, opendaxCurrency.ToBinanceCoinName()))
-			}
+			binanceMinWithdraw, _ := network.WithdrawMin.Float64()
 
 			if opendaxMinWithdraw >= binanceMinWithdraw {
 				color.Green(fmt.Sprintf("MinWithdraw amount satisfy condition\nOpendax: %f; Binance: %f;\n", opendaxMinWithdraw, binanceMinWithdraw))
@@ -194,15 +189,9 @@ func compareFees() error {
 				color.Red(fmt.Sprintf("MinWithdraw amount DOES NOT satisfy condition!\nOpendax: %f; Binance: %f;\n", opendaxMinWithdraw, binanceMinWithdraw))
 			}
 
-			opendaxWithdrawFee, err := opendaxCurrency.WithdrawFee.Float64()
-			if err != nil {
-				color.Magenta(fmt.Sprintf("\nERROR: %s\n%s cannot convert Opendax Withdraw Fee to Float64, skipping ...\n", err, opendaxCurrency.ToBinanceCoinName()))
-			}
+			opendaxWithdrawFee, _ := opendaxCurrency.WithdrawFee.Float64()
 
-			binanceWithdrawFee, err := network.WithdrawFee.Float64()
-			if err != nil {
-				color.Magenta(fmt.Sprintf("\nERROR: %s\n%s cannot convert Binance Withdraw Fee to Float64, skipping ...\n", err, opendaxCurrency.ToBinanceCoinName()))
-			}
+			binanceWithdrawFee, _ := network.WithdrawFee.Float64()
 
 			if opendaxWithdrawFee >= binanceWithdrawFee {
 				color.Green(fmt.Sprintf("WithdrawFee amount satisfy condition\nOpendax: %f; Binance: %f;\n", opendaxWithdrawFee, binanceWithdrawFee))
