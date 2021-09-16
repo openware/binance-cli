@@ -65,7 +65,7 @@ func TestBinanceMarket(t *testing.T) {
 				},
 				{
 					Type:        "LOT_SIZE",
-					MinQuantity: json.Number("0.00001000"),
+					MinQuantity: json.Number("0.00002000"),
 				},
 				{
 					Type:        "MIN_NOTIONAL",
@@ -89,7 +89,7 @@ func TestBinanceMarket(t *testing.T) {
 			PricePrecision:  2,
 		}, odxm)
 
-		odxm, err = bm.ToOpendaxMarket(0.000005) // BTC at 2000k
+		odxm, err = bm.ToOpendaxMarket(0.000005) // BTC at 2M
 		require.NoError(t, err)
 
 		assert.Equal(t, &opendax.OpendaxMarket{
@@ -99,7 +99,7 @@ func TestBinanceMarket(t *testing.T) {
 			QuoteUnit:       "usdt",
 			MinPrice:        json.Number("0.01000000"),
 			MaxPrice:        json.Number("0.00"),
-			MinAmount:       json.Number("0.00001"),
+			MinAmount:       json.Number("0.00002000"),
 			AmountPrecision: 5,
 			PricePrecision:  2,
 		}, odxm)

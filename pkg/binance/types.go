@@ -95,6 +95,10 @@ func (m *BinanceMarket) ToOpendaxMarket(minAmountFloat float64) (*opendax.Openda
 
 	minAmount := json.Number(fmt.Sprintf("%0."+fmt.Sprint(amountPrecision)+"f", minAmountFloat))
 
+	if minAmount < quantityFilter.MinQuantity {
+		minAmount = quantityFilter.MinQuantity
+	}
+
 	return &opendax.OpendaxMarket{
 		Symbol:    strings.ToLower(strings.Join([]string{m.BaseUnit, m.QuoteUnit}, "")),
 		Name:      strings.ToUpper(strings.Join([]string{m.BaseUnit, m.QuoteUnit}, "/")),
