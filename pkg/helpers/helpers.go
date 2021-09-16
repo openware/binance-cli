@@ -11,16 +11,16 @@ func ValuePrecision(number json.Number) int {
 		return 0
 	} else if v < 1 {
 		n = 1
-		for v*10 < 1 {
+		for v < 0.1 {
 			n += 1
 			v *= 10
 		}
-
 	} else if v < 10 {
 		n = 0
 	} else {
 		n = -1
-		for v/10 > 1 {
+		for v > 10 {
+			v /= 10
 			n -= 1
 		}
 	}

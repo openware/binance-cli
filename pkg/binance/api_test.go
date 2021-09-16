@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/openware/binance-cli/pkg/opendax"
 )
@@ -18,11 +19,6 @@ var (
 	server        *httptest.Server
 	binanceClient *BinanceClient
 	ticker        = "ETHUSDT"
-
-	expectedTickerPriceRes = BinanceTickerPrice{
-		Symbol: "ETHUSDT",
-		Price:  json.Number("3500.00000000"),
-	}
 
 	expectedFilters = []Filter{
 		{
@@ -47,25 +43,6 @@ var (
 		QuoteUnit:      "USDT",
 		QuotePrecision: json.Number("8"),
 		Filters:        expectedFilters,
-	}
-	expectedExchangeInfoRes = BinanceExchangeInfo{
-		Symbols:        []BinanceMarket{expectedMarket},
-		MarketRegistry: map[string]BinanceMarket{"ETHUSDT": expectedMarket},
-	}
-
-	// expectedMarket minNotional divided by expectedPrice
-	expectedMinAmount = 0.003
-
-	expectedOpendaxMarket = opendax.OpendaxMarket{
-		Symbol:          "ethusdt",
-		Name:            "ETH/USDT",
-		BaseUnit:        "eth",
-		QuoteUnit:       "usdt",
-		MinPrice:        expectedFilters[0].MinPrice,
-		MaxPrice:        json.Number("0.00"),
-		MinAmount:       json.Number("0.0030"),
-		AmountPrecision: 4,
-		PricePrecision:  2,
 	}
 )
 
@@ -106,6 +83,11 @@ func TestTickerPriceEndpoint(t *testing.T) {
 	res, err := binanceClient.TickerPriceInfo(ticker)
 	assert.NoError(t, err)
 
+	expectedTickerPriceRes := &BinanceTickerPrice{
+		Symbol: "ETHUSDT",
+		Price:  json.Number("3500.00000000"),
+	}
+
 	assert.Equal(t, expectedTickerPriceRes, res)
 }
 
@@ -122,17 +104,40 @@ func TestExchangeInfoEndpoint(t *testing.T) {
 	res, err := binanceClient.ExchangeInfo()
 	assert.NoError(t, err)
 
+	expectedExchangeInfoRes := &BinanceExchangeInfo{
+		Symbols:        []BinanceMarket{expectedMarket},
+		MarketRegistry: map[string]BinanceMarket{"ETHUSDT": expectedMarket},
+	}
+
 	assert.Equal(t, expectedExchangeInfoRes, res)
 }
 
 func TestCalculateMinAmount(t *testing.T) {
+	expectedTickerPriceRes := &BinanceTickerPrice{
+		Symbol: "ETHUSDT",
+		Price:  json.Number("3500.00000000"),
+	}
+
 	minAmount, err := expectedMarket.CalculateMinAmount(expectedTickerPriceRes.Price)
 	assert.NoError(t, err)
 
-	assert.Equal(t, expectedMinAmount, minAmount)
+	assert.Equal(t, 0.003, minAmount)
 }
 
 func TestToOpendaxMarket(t *testing.T) {
-	res := expectedMarket.ToOpendaxMarket(expectedMinAmount)
+	expectedOpendaxMarket := &opendax.OpendaxMarket{
+		Symbol:          "ethusdt",
+		Name:            "ETH/USDT",
+		BaseUnit:        "eth",
+		QuoteUnit:       "usdt",
+		MinPrice:        expectedFilters[0].MinPrice,
+		MaxPrice:        json.Number("0.00"),
+		MinAmount:       json.Number("0.0030"),
+		AmountPrecision: 4,
+		PricePrecision:  2,
+	}
+
+	res, err := expectedMarket.ToOpendaxMarket(0.003)
+	require.NoError(t, err)
 	assert.Equal(t, expectedOpendaxMarket, res)
 }

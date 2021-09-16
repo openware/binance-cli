@@ -69,16 +69,20 @@ func compareMarkets() error {
 				continue
 			}
 
-			convertedBinanceMarket := binanceMarket.ToOpendaxMarket(minAmount)
+			convertedBinanceMarket, err := binanceMarket.ToOpendaxMarket(minAmount)
+			if err != nil {
+				fmt.Printf("Error: %s, Skipping\n", err.Error())
+				continue
+			}
 			fmt.Println("Comparing", opendaxMarket.Symbol)
-			fmt.Println("Equal:", opendax.CompareOpendaxMarkets(opendaxMarket, convertedBinanceMarket))
+			fmt.Println("Equal:", opendax.CompareOpendaxMarkets(&opendaxMarket, convertedBinanceMarket))
 			fmt.Println("Binance:")
 			convertedBinanceMarket.Print()
 			fmt.Println("Opendax:")
 			opendaxMarket.Print()
 			fmt.Println("")
 
-			if opendax.CompareOpendaxMarkets(opendaxMarket, convertedBinanceMarket) {
+			if opendax.CompareOpendaxMarkets(&opendaxMarket, convertedBinanceMarket) {
 				fmt.Println("Skipping")
 				continue
 			}

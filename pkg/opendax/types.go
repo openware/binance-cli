@@ -72,7 +72,7 @@ func (r *UpdateMarketRequest) Encode() ([]byte, error) {
 	return json.Marshal(r)
 }
 
-func CompareOpendaxMarkets(firstMarket, secondMarket OpendaxMarket) bool {
+func CompareOpendaxMarkets(firstMarket, secondMarket *OpendaxMarket) bool {
 	if firstMarket.AmountPrecision != secondMarket.AmountPrecision || firstMarket.PricePrecision != secondMarket.PricePrecision || firstMarket.MinAmount != secondMarket.MinAmount {
 		return false
 	}
