@@ -22,6 +22,8 @@ steps:
     when:
       event:
         - push
+      branch:
+        - master
 
   - name: test-build
     image: golang:1.16-stretch
@@ -34,6 +36,7 @@ steps:
     when:
       event:
         - tag
+        - push
 
   - name: docker-build
     image: plugins/docker
@@ -52,5 +55,3 @@ trigger:
   event:
     - push
     - tag
-  branch:
-    - master
