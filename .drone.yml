@@ -22,31 +22,21 @@ steps:
     when:
       event:
         - push
+      branch:
+        - master
 
   - name: test-build
-    image: golang:1.14-stretch
+    image: golang:1.16-stretch
     environment:
       GO111MODULE: "on"
     commands:
-    # - apt-get update
-    # - apt-get install -y build-essential
       - go mod download
       - go test ./... -race --cover --count=10 --timeout 2m
       - echo $DRONE_TAG > .tags
-    # - ./build.sh
     when:
       event:
         - tag
-
-# - name: publish
-#   image: plugins/github-release
-#   settings:
-#     api_key:
-#       from_secret: github_api_key
-#     files: bin/*
-#   when:
-#     event:
-#       - tag
+        - push
 
   - name: docker-build
     image: plugins/docker
@@ -65,5 +55,3 @@ trigger:
   event:
     - push
     - tag
-  branch:
-    - master

@@ -11,9 +11,10 @@ import (
 )
 
 const (
-	binanceBaseUrl          = "https://api.binance.com"
+	BinanceBaseUrl          = "https://api.binance.com"
 	coinsInfoEndpoint       = "/sapi/v1/capital/config/getall"
 	exchangeInfoEndpoint    = "/api/v3/exchangeInfo"
+	tickerPriceInfoEndpoint = "/api/v3/ticker/price"
 	NotFoundError           = "404 Record Not Found"
 	ServiceUnavailableError = "503 Service Unavailable"
 	HttpTransportError      = "HTTP Transport Error"
@@ -24,8 +25,10 @@ var SignedEndpoints = map[string]struct{}{
 }
 
 func (bc *BinanceClient) apiCall(endpoint string, receiver interface{}) (interface{}, error) {
-	uri := binanceBaseUrl + endpoint
+	uri := bc.url + endpoint
 	req, _ := http.NewRequest("GET", uri, nil)
+
+	fmt.Printf("Calling %s\n", uri)
 
 	req.Header.Add("X-MBX-APIKEY", bc.apiKey)
 

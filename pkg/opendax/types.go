@@ -4,20 +4,22 @@ import (
 	"encoding/json"
 	"fmt"
 	"strings"
+
+	"github.com/shopspring/decimal"
 )
 
 type OpendaxClient struct {
-	platrofmUrl string
-	apiKey string
-	secretKey string
+	platformUrl string
+	apiKey      string
+	secretKey   string
 }
 
 type OpendaxCurrencies []*OpendaxCurrency
 
 type OpendaxCurrency struct {
 	Code              string      `json:"id"`
-	WithdrawFee       json.Number `json:"withdraw_fee"`
-	MinWithdrawAmount json.Number `json:"min_withdraw_amount"`
+	WithdrawFee       decimal.Decimal `json:"withdraw_fee"`
+	MinWithdrawAmount decimal.Decimal `json:"min_withdraw_amount"`
 }
 
 func (c *OpendaxCurrency) ToBinanceCoinName() string {
@@ -27,15 +29,15 @@ func (c *OpendaxCurrency) ToBinanceCoinName() string {
 type OpendaxMarkets []OpendaxMarket
 
 type OpendaxMarket struct {
-	Symbol          string      `json:"symbol"`
-	Name            string      `json:"name"`
-	BaseUnit        string      `json:"base_unit"`
-	QuoteUnit       string      `json:"quote_unit"`
-	MinPrice        json.Number `json:"min_price"`
-	MaxPrice        json.Number `json:"max_price"`
-	MinAmount       json.Number `json:"min_amount"`
-	AmountPrecision int         `json:"amount_precision"`
-	PricePrecision  int         `json:"price_precision"`
+	Symbol          string          `json:"symbol"`
+	Name            string          `json:"name"`
+	BaseUnit        string          `json:"base_unit"`
+	QuoteUnit       string          `json:"quote_unit"`
+	MinPrice        decimal.Decimal `json:"min_price"`
+	MaxPrice        decimal.Decimal `json:"max_price"`
+	MinAmount       decimal.Decimal `json:"min_amount"`
+	AmountPrecision int64           `json:"amount_precision"`
+	PricePrecision  int64           `json:"price_precision"`
 }
 
 func (om OpendaxMarket) ToBinanceMarketName() string {
@@ -60,21 +62,32 @@ type Request interface {
 }
 
 type UpdateMarketRequest struct {
-	Symbol          string      `json:"symbol"`
-	MinPrice        json.Number `json:"min_price"`
-	MaxPrice        json.Number `json:"max_price"`
-	MinAmount       json.Number `json:"min_amount"`
-	AmountPrecision int         `json:"amount_precision"`
-	PricePrecision  int         `json:"price_precision"`
+	Symbol          string          `json:"symbol"`
+	MinPrice        decimal.Decimal `json:"min_price"`
+	MaxPrice        decimal.Decimal `json:"max_price"`
+	MinAmount       decimal.Decimal `json:"min_amount"`
+	AmountPrecision int64             `json:"amount_precision"`
+	PricePrecision  int64             `json:"price_precision"`
 }
 
 func (r *UpdateMarketRequest) Encode() ([]byte, error) {
 	return json.Marshal(r)
 }
 
-func CompareOpendaxMarkets(firstMarket, secondMarket OpendaxMarket) bool {
-	if (firstMarket.AmountPrecision != secondMarket.AmountPrecision || firstMarket.PricePrecision != secondMarket.PricePrecision) {
+func CompareOpendaxMarkets(firstMarket, secondMarket *OpendaxMarket) bool {
+	if firstMarket.AmountPrecision != secondMarket.AmountPrecision || firstMarket.PricePrecision != secondMarket.PricePrecision || !firstMarket.MinAmount.Equals(secondMarket.MinAmount) {
 		return false
 	}
 	return true
+}
+
+// UpdateSecretRequest represents params for a Sonic secret update request
+type UpdateSecretRequest struct {
+	Key   string `json:"key"`
+	Scope string `json:"scope"`
+	Value string `json:"value"`
+}
+
+func (r *UpdateSecretRequest) Encode() ([]byte, error) {
+	return json.Marshal(r)
 }
